@@ -1,0 +1,185 @@
+// CLASS: ComputerPlayer
+//
+// Author: Ovietobore Oghre 7793149
+//
+// REMARKS: performs the operations of a computer player
+//
+//-----------------------------------------
+import java.util.Random;
+public class ComputerPlayer implements ChessPlayer {
+  private int level;//level 1 is easy, level 2 is hard
+  
+  //constructor
+  public ComputerPlayer(int setLevel) { 
+    level = setLevel;
+  }
+  
+  //------------------------------------------------------
+  // makeMove
+  //
+  // PURPOSE: to play a move for the AI depending on the level of the AI
+  // PARAMETERS:
+  // 1) 4 integers rowInit, colInit, rowFinal and colFinal representing the begisnning position of the piece
+  //     and the end position of the piece
+  // 2) a 2 dimensional array of pieces
+  // Returns: none
+  //------------------------------------------------------
+  public void makeMove(ChessDisplay d, int rowInit, int colInit, int rowFinal, int colFinal){
+    if(level ==1){
+      makeMoveLevel1(d);
+    }
+    else if(level ==2){
+      makeMoveLevel2( d,  rowInit,  colInit,  rowFinal, colFinal);
+    }
+  }
+  
+  //------------------------------------------------------
+  // makeMoveLevel1
+  //
+  // PURPOSE: to play a move for the AI on easy
+  // PARAMETERS: a ChessDisplay
+  // Returns: none
+  //------------------------------------------------------
+  public void makeMoveLevel1(ChessDisplay d){
+    //if(level==1){      
+    Random rand = new Random();
+    int row1 = rand.nextInt(8);
+    int col1 = rand.nextInt(8);
+    int row2 = rand.nextInt(8);
+    int col2 = rand.nextInt(8);
+    
+    while( !isValidAI(d.getBoard(), row1, col1, row2, col2)){ //loop until a valid move is made randomly
+      row1 = rand.nextInt(8);
+      col1 = rand.nextInt(8);
+      row2 = rand.nextInt(8);
+      col2 = rand.nextInt(8);
+    }
+    d.summarizeMove(row1, col1, row2, col2);
+    if(!(d.getBoard()[row1][col1] instanceof Pawn)|| !(((Pawn)d.getBoard()[row1][col1]).checkForPromotion(d.getBoard(), row1, col1, row2, col2)))
+    {
+      d.getBoard()[row2][col2]=d.getBoard()[row1][col1];
+      d.getBoard()[row1][col1]=null;
+      
+    }
+    d.copyToExtraBoard();
+    d.displayBoard();
+  }
+  
+  
+  //------------------------------------------------------
+  // makeMoveLevel2
+  //
+  // PURPOSE: to play a move for the AI on hard level
+  // PARAMETERS:
+  // 1) 4 integers rowInit, colInit, rowFinal and colFinal representing the begisnning position of the piece
+  //     and the end position of the piece
+  // 2) a 2 dimensional array of pieces
+  // Returns: none
+  //------------------------------------------------------
+  public void makeMoveLevel2(ChessDisplay d, int rowInit, int colInit, int rowFinal, int colFinal){
+    Random rand = new Random();
+    int rand1 =rand.nextInt(8);
+    int rand2 = rand.nextInt(8);
+    int count =0;
+    
+    boolean checkMove = false; //to check if we already made a move
+    //loop 10000 times 
+    while( count<10000){
+      checkMove = false;
+      //if the previous move attacks any piece after 100000 iteratons
+      if(isValidAI(d.getBoard(), rowFinal, colFinal, rand1, rand2) && d.getBoard()[rand1][rand2]!=null && !d.getBoard()[rand1][rand2].getTeam()){
+        //if that piece can capture previous piece, capture
+        if(isValidAI(d.getBoard(), rand1, rand2, rowFinal, colFinal)){
+              d.summarizeMove(rand1, rand2, rowFinal, colFinal);
+              if(!(d.getBoard()[rand1][rand2] instanceof Pawn)|| !(((Pawn)d.getBoard()[rand1][rand2]).checkForPromotion(d.getBoard(), rand1, rand2, rowFinal, colFinal)))
+              {
+                d.getBoard()[rowFinal][colFinal]=d.getBoard()[rand1][rand2];
+                d.getBoard()[rand1][rand2]=null;
+              }
+              d.copyToExtraBoard();
+              d.displayBoard();
+              checkMove = true;
+              break; 
+        }
+
+      }
+      rand1 = rand.nextInt(8);
+      rand2 = rand.nextInt(8);
+      count++;
+    }
+    int rand3 = rand.nextInt(8);
+    int rand4 = rand.nextInt(8);   
+    if(!checkMove){
+      while( !isValidAI(d.getBoard(), rand1, rand2, rand3, rand4)){
+        rand1 =rand.nextInt(8);
+        rand2 = rand.nextInt(8);
+        rand3 = rand.nextInt(8);
+        rand4 = rand.nextInt(8);
+      }
+    }
+    if(!checkMove){
+      d.summarizeMove(rand1, rand2, rand3, rand4);
+      if(!(d.getBoard()[rand1][rand2] instanceof Pawn)|| !(((Pawn)d.getBoard()[rand1][rand2]).checkForPromotion(d.getBoard(), rand1, rand2, rand3, rand4)))
+      {
+        d.getBoard()[rand3][rand4]=d.getBoard()[rand1][rand2];
+        d.getBoard()[rand1][rand2]=null;
+        
+      }
+      d.copyToExtraBoard();
+      d.displayBoard();
+    } 
+  }
+  
+  //------------------------------------------------------
+  // isValidAi
+  //
+  // PURPOSE: to internally ensure that the AIs move is valid
+  // PARAMETERS:
+  // 1) 4 integers rowInit, colInit, rowFinal and colFinal representing the begisnning position of the piece
+  //     and the end position of the piece
+  // 2) a 2 dimensional array of pieces
+  // Returns: returns true if the proposed move is legal or false if it is illegal
+  //-----------------------------------------------------
+  private boolean isValidAI(Piece [][] board, int rowInit, int colInit, int rowFinal, int colFinal ){
+    boolean result=false;
+    if((rowInit != rowFinal || colInit!=colFinal) && board[rowInit][colInit] != null &&
+       board[rowInit][colInit].getTeam()==false){ //a piece cannot stay on the ssame place
+      //initial square must contain a computers piece
+      //PAWN 
+      if(board[rowInit][colInit] instanceof Pawn)
+      {
+        result=((Pawn)board[rowInit][colInit]).isValid(board, rowInit, colInit, rowFinal, colFinal);
+        
+      }
+      
+      //QUEEN
+      else if(board[rowInit][colInit] instanceof Queen)//queen
+      {
+        result = ((Queen)board[rowInit][colInit]).isValid(board, rowInit, colInit, rowFinal, colFinal);
+      }
+      //ROOK
+      else if(board[rowInit][colInit] instanceof Rook )//rook
+      {
+        result=((Rook)board[rowInit][colInit]).isValid(board, rowInit, colInit, rowFinal, colFinal);
+      }
+      
+      
+      else if(board[rowInit][colInit] instanceof Knight)//knight
+      {
+        result=((Knight)board[rowInit][colInit]).isValid(board, rowInit, colInit, rowFinal, colFinal);
+        
+      }
+      else if(board[rowInit][colInit] instanceof Bishop)//bishop
+      {
+        result=((Bishop)board[rowInit][colInit]).isValid(board, rowInit, colInit, rowFinal, colFinal);
+      }
+      else if(board[rowInit][colInit] instanceof King)//king
+      {
+        result=((King)board[rowInit][colInit]).isValid(board, rowInit, colInit, rowFinal, colFinal);
+      }
+    }
+    return result;
+  }
+  
+  
+}

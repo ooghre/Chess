@@ -1,0 +1,19 @@
+public abstract class Piece{
+  private String symbol;
+  private boolean team; //if team ==true it belongs to user else it belongs to computer
+  
+  public String getSymbol(){
+    return symbol;
+  }
+  public  boolean getTeam(){
+    return team;
+  }
+  
+  public void setSymbol(String s){
+    symbol =s;
+  }
+  
+  public void setTeam(boolean b){
+    team =b;
+  }
+}

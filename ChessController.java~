@@ -1,0 +1,4 @@
+public interface ChessController {
+  public boolean movePiece();
+  public void reset();
+} 

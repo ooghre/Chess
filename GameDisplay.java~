@@ -1,0 +1,6 @@
+public interface GameDisplay {
+  public int promptForOpponentDifficulty(int maxDifficulty);
+  public void displayBoard();
+  public void summarizeMove();
+  public void gameOver(int winner);
+} 
